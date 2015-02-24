@@ -70,15 +70,23 @@ public class Nrg4castAlarmListener implements UpdateListener {
 				} else if(propName.equals("phenomenon")){
 					p.setPhenomenon(eb.get(propNames[j]).toString());
 					addParam=true;
-				} 
-				else if(propName.equals("value")){
+				} else if(propName.equals("value")){
 					p.setValue(eb.get(propNames[j]).toString());
 					addParam=true;
-				} 
-				else if(propName.equals("uom")){
+				} else if(propName.equals("uom")){
 					p.setUom(eb.get(propNames[j]).toString());
 				} else if(propName.equals("sensorId")){
 					alert.setSensorId(eb.get(propNames[j]).toString());
+				} else if(propName.equals("message")){
+					alert.setMessage(eb.get(propNames[j]).toString());
+				}else if(propName.equals("pilotName")){
+					alert.setPilotId(eb.get(propNames[j]).toString());
+				}else if(propName.equals("level")){
+					alert.setLevel(eb.get(propNames[j]).toString());
+				}else if(propName.equals("type")){
+					alert.setType(eb.get(propNames[j]).toString());
+				}else if(propName.equals("name")){
+					alert.setName(eb.get(propNames[j]).toString());
 				}
 				
 
@@ -86,7 +94,6 @@ public class Nrg4castAlarmListener implements UpdateListener {
 			if(addParam){
 				alert.addParameter(p);
 			}
-			alert.buildMessage();
 			log.info("Alert sent: " + alert.toJsonString());
 			try {
 				sendToAlertBus("event="+alert.toJsonString());
@@ -104,7 +111,7 @@ public class Nrg4castAlarmListener implements UpdateListener {
 		try {
 			URI myURI = null;
 			try {
-				myURI = new URI("http", "demo3.nrg4cast.org:8081","/",url,null);
+				myURI = new URI("http", "demo3.nrg4cast.org:8088","/",url,null);
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

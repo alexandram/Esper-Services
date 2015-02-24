@@ -82,7 +82,7 @@ public class EPLQueryParser extends HttpServlet {
 		ServletContext context = request.getSession().getServletContext();
 		Map<String, EsperInstance> contextAttr = (Map<String, EsperInstance>) context.getAttribute("instances");
 		EsperInstance esper = contextAttr.get(nrg4castEngineName);
-
+		
 		if(request.getParameter("rule")!=null){
 			String ruleString = request.getParameter("rule"); 
 			String callString = addQueryToEsper(esper, ruleString,context);
@@ -156,98 +156,25 @@ public class EPLQueryParser extends HttpServlet {
 				if(!esper.isValidQueryName(name)){
 					return "invalid query name " + name + " .A query with this name is already registered.";
 				}
-				String pilotId = queryObj.get("pilotName").toString();
+				String pilotName = queryObj.get("pilotName").toString();
 				String type = queryObj.get("type").toString();
 				String level = queryObj.get("level").toString();
+				String message = queryObj.get("message").toString();
 
 				if (queryObj.containsKey("epl")){
 					queryString = queryObj.get("epl").toString();
-					//extract window or interval
-					String interval = null;
-					if(queryString.contains("interval")){
-						String str1=queryString.split("interval")[1];
-					//	System.out.println(str1);
-						interval =str1.substring(1,str1.indexOf(")"));
-					}
-					//add event header to context
-					Map<String, AlertHeader> eventHeaders= (Map<String, AlertHeader>) context.getAttribute("eventHeaders");
-					AlertHeader eh = new AlertHeader(name, pilotId, type, level,interval);
-					eventHeaders.put(name, eh);
-
-				} else {
-					//parse select
-					String selectStr = "";
-					if(queryObj.containsKey("select")){
-						JSONArray selectArr = (JSONArray) queryObj.get("select");
-						if(selectArr.size()>0){
-							for(int i=0;i<selectArr.size();i++){
-								selectStr += selectArr.get(i).toString();
-								if(i<selectArr.size()-1){
-									selectStr += ",";
-								}
-							}
-						} else {
-							return "invalid select";
-						}
+					String [] qss = queryString.split("\\*");
+					if(qss.length!=2){
+						return "unkown error, select statement seems to be incomplete";
 					} else {
-						selectStr = "*";
+						queryString = qss[0] + "*,'" + 
+								pilotName + "' as pilotName, '" + 
+								type + "' as type, '" + 
+								level + "' as level, '" +
+								message +"' as message " + qss[1];
 					}
-
-					//parse streams
-
-					String streamStr = "";				
-					if(queryObj.containsKey("stream")){
-						JSONArray streamArr = (JSONArray) queryObj.get("stream");
-						if(streamArr.size()>0){
-							for(int i=0;i<streamArr.size();i++){
-								selectStr += streamArr.get(i).toString();
-								if(i<streamArr.size()-1){
-									streamStr += ",";
-								}
-							}
-						} else {
-							return "invalid stream";
-						}
-					} else {
-						streamStr = "Measurement";
-					}
-
-					//parse window
-					String timeInterval = null;
-					if(queryObj.containsKey("window")){
-						if(validTimeWindow(queryObj.get("window").toString())){
-							timeInterval = queryObj.get("window").toString();
-
-						}
-						//add event header to context
-						Map<String, AlertHeader> eventHeaders= (Map<String, AlertHeader>) context.getAttribute("eventHeaders");
-						eventHeaders.put(name, new AlertHeader(name, pilotId, type, level,timeInterval));
-					} else{
-						//add event header to context
-						Map<String, AlertHeader> eventHeaders= (Map<String, AlertHeader>) context.getAttribute("eventHeaders");
-						eventHeaders.put(name, new AlertHeader(name, pilotId, type, level));
-					}
-
-					//parse parameters
-					String parameters = "";
-					ArrayList<PatternParameter> paramArray = new ArrayList<PatternParameter>();
-					if(queryObj.containsKey("parameters")){
-						parameters = parseParameters((JSONObject)queryObj.get("parameters"));
-
-					}
-
-					queryString = "@Name(\"" + name + "\") select " + selectStr + " from " + streamStr;
-					if(timeInterval !=null){
-						queryString += ".win:" + timeInterval;
-					}
-					if(parameters.length()>1){
-						queryString += " where " + parameters;
-					}
-
-
-
-
-				}
+					
+				} 
 			}
 		}catch(Exception e){
 			e.printStackTrace();

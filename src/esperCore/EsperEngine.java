@@ -47,7 +47,7 @@ public class EsperEngine implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
-		//	PropertyConfigurator.configure(new File("D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\log4j.properties").toString()); //uncoment for .war deployment
+			PropertyConfigurator.configure(new File("D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\log4j.properties").toString()); //uncoment for .war deployment
 		this.context = servletContextEvent.getServletContext();
 
 

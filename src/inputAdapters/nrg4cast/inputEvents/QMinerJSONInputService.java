@@ -10,7 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
+
+
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -18,8 +19,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -32,7 +33,8 @@ import org.json.simple.JSONValue;
 public class QMinerJSONInputService {
 
 	static final Logger log = Logger.getLogger(QMinerJSONInputService.class);
-	static String esperService = "http://localhost:9079/sendData2Esper?stream=Measurement&";
+	static String esperService = "http://localhost:9079/sendData2Esper?"
+			+ "stream=Measurement&";
 	private final String USER_AGENT = "Mozilla/5.0";
 	@POST
 	@Path("/QMinerJSONInputService")
@@ -40,7 +42,8 @@ public class QMinerJSONInputService {
 	public Response getQMinerJSONData(InputStream incomingData) {
 		StringBuilder jsonBuilder = new StringBuilder();
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(incomingData));
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(incomingData));
 			String line = null;
 			while ((line = in.readLine()) != null) {
 				jsonBuilder.append(line);
@@ -58,6 +61,38 @@ public class QMinerJSONInputService {
 		} else{
 			return Response.status(400).entity(jsonBuilder.toString()).build();
 		}
+	}
+	
+	@POST
+	@Path("/QMinerPredictionInputService")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getQMinerPredictionData(InputStream incomingData) {
+		StringBuilder jsonBuilder = new StringBuilder();
+		try {
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(incomingData));
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				jsonBuilder.append(line);
+			}
+		} catch (Exception e) {
+			System.out.println("Error Parsing: - ");
+		}
+		//System.out.println("Data Received: " + jsonBuilder.toString());
+
+		// return HTTP response 200 in case of success
+		if(JSONValue.parse(jsonBuilder.toString())!=null){
+			//log.info(jsonBuilder.toString() + "\n");
+			callEsperService4Predictions(jsonBuilder.toString());
+			return Response.status(200).entity(jsonBuilder.toString()).build();			
+		} else{
+			return Response.status(400).entity(jsonBuilder.toString()).build();
+		}
+	}
+
+	private void callEsperService4Predictions(String string) {
+		System.out.println("predictions received: - " + string);
+		
 	}
 
 	private void callEsperService(String string) {
@@ -122,7 +157,8 @@ public class QMinerJSONInputService {
 		try {
 		    URI myURI = null;
 			try {
-				myURI = new URI("http", "localhost:9079","/sendData2Esper",url,null);
+				myURI = new URI("http", "localhost:9079","/sendData2Esper",
+						url,null);
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

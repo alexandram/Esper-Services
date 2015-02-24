@@ -27,6 +27,27 @@ public class Alert {
 	private String sensorId;
 
 
+	public Alert(String location, double latitude, double longitude,
+			String message, Date timestamp, String name, String pilotId,
+			String type, String level, String timeWindow,
+			ArrayList<PatternParameter> parameters, boolean isLatLngSet,
+			String sensorId) {
+		super();
+		this.location = location;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.message = message;
+		this.timestamp = timestamp;
+		this.name = name;
+		this.pilotId = pilotId;
+		this.type = type;
+		this.level = level;
+		this.timeWindow = timeWindow;
+		this.parameters = parameters;
+		this.isLatLngSet = isLatLngSet;
+		this.sensorId = sensorId;
+	}
+
 	public void addParameter(PatternParameter p){
 		parameters.add(p);
 	}
@@ -123,40 +144,7 @@ public class Alert {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void buildMessage(){
-		String paramStr= "";
-		if(this.getType().equals("missing data")){
-			this.message = "No measurement from " + this.sensorId + " for " + this.getTimeWindow();
-		}else{
-			for(int i=0;i<parameters.size();i++){
-				PatternParameter p = parameters.get(i);
-				if(p.getPhenomenon()!=null){
-					paramStr += p.getPhenomenon();	
-				} 
-				if(p.getValue()!=null) {
-					paramStr +=  " " +p.getValue();
-				} 
-				if(p.getRelation()!=null) {
-					paramStr +=  " " +p.getRelation();
-				} 
-
-				if(p.getThreshold()!=null) {
-					paramStr +=  " " +p.getThreshold();
-				} 
-
-				if (p.getUom() != null){
-					paramStr += " " +p.getUom();
-				} 
-
-				if(i<parameters.size()-1){
-					paramStr += ", ";
-				}
-
-			}
-			this.message = this.getName() + " at " + this.location + " " + paramStr;
-		}
-		
-	}
+	
 
 	public String toJsonString(){
 
@@ -174,7 +162,7 @@ public class Alert {
 		}
 		if(isLatLngSet){
 			jsonObj.put("Latitude", this.latitude);
-			jsonObj.put("Location", this.longitude);
+			jsonObj.put("Longitude", this.longitude);
 		}
 		if(this.getTimeWindow()!=null){
 			jsonObj.put("Timewindow", this.getTimeWindow());

@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class Measurement {
+public class Measurement implements Comparable<Measurement> {
 	private String nodeId;
 	private String nodeName;
 	private String subjectId;
@@ -110,7 +110,8 @@ public class Measurement {
 		//"2013-02-02T10:11:12.984",
 
 		String timestamp = this.getTimestampStr().replace("T", "-");
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss.SSS", Locale.ENGLISH);
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss.SSS", 
+				Locale.ENGLISH);
 		Date result;
 
 		try {
@@ -147,7 +148,20 @@ public class Measurement {
 		this.uom = uom;
 	}
 
+	public String toString(){
+		return nodeId + " " + phenomenon + " " + value + 
+				" " + uom + " " +timestamp.toString();
+	}
 
+	@Override
+	public int compareTo(Measurement m) {
+		if(this.timestamp.after(m.timestamp)){
+			return 1;
+		} else if (this.timestamp.before(m.timestamp)){
+			return -1;
+		}
+		return 0;
+	}
 
 
 }

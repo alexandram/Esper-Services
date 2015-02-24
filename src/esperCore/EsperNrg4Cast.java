@@ -56,8 +56,8 @@ public class EsperNrg4Cast implements EsperInstance{
 
 	static final Logger log = Logger.getLogger(EsperNrg4Cast.class);
 	static String engineName = "nrg4cast";
-	//	static String configFile = "D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\esper.nrg4cast.cfg.xml"; //uncomment this for tomcat deployment
-	static String configFile = "D:\\Users\\alexandram\\nrg4cast\\Esper-Services\\WebContent\\WEB-INF\\conf\\esper.nrg4cast.cfg.xml";
+		static String configFile = "D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\esper.nrg4cast.cfg.xml"; //uncomment this for tomcat deployment
+	//static String configFile = "D:\\Users\\alexandram\\nrg4cast\\Esper-Services\\WebContent\\WEB-INF\\conf\\esper.nrg4cast.cfg.xml";
 	static String queriesFile = "D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\queries.epl";
 	Configuration cepConfig = null;
 	EPServiceProvider cep = null;
@@ -83,16 +83,24 @@ public class EsperNrg4Cast implements EsperInstance{
 
 		
 		//tests
-		EPAdministrator cepAdm = cep.getEPAdministrator();
-		EPStatement cepStatement = cepAdm.createEPL("@Name(\"Phenomena\") select phenomenon from Measurement.win:time_batch(10 min).std:unique(phenomenon)");
+//		EPAdministrator cepAdm = cep.getEPAdministrator();
+//		EPStatement cepStatement = cepAdm.createEPL("@Name(\"Phenomena\") select phenomenon from Measurement.win:time_batch(10 min).std:unique(phenomenon)");
 
-		cepStatement.addListener(new CEPListener());
+	//	cepStatement.addListener(new CEPListener());
 
 
 
 	}
 	@Override
 	public void addListeners(){
+		// add listener for all queries added from saving modules
+		EPAdministrator cepAdm = cep.getEPAdministrator();
+		String[] names = cepAdm.getStatementNames();
+		HashMap<String,String> returnMap = new HashMap<String,String>();
+		for(String key:names){
+			cepAdm.getStatement(key).addListener(new Nrg4castAlarmListener(this.context, key));
+
+		}	
 
 	}
 
@@ -173,7 +181,7 @@ public class EsperNrg4Cast implements EsperInstance{
 	private void writeLineToFile(Path newFile, String text) {
 		try(BufferedWriter writer = Files.newBufferedWriter(
 				newFile, Charset.defaultCharset(), StandardOpenOption.APPEND)){
-			writer.append(text);
+			writer.append(text + ";");
 			System.out.println("line added: " + text);
 			writer.newLine();
 			writer.flush();

@@ -96,6 +96,7 @@ public class QMinerJSONInputService {
 	}
 
 	private void callEsperService(String string) {
+		System.out.println(string);
 		JSONArray array= (JSONArray)JSONValue.parse(string);
 		for(int i=0;i<array.size();i++){
 			JSONObject obj= (JSONObject)array.get(i);
@@ -103,7 +104,7 @@ public class QMinerJSONInputService {
 			String nodeId = node.get("id").toString();
 			String nodeName = node.get("name").toString();
 			String subjectid ="";
-			if(node.containsKey("subjectId")){
+			if(node.containsKey("subjectid")){
 				subjectid = node.get("subjectid").toString();
 			}
 			

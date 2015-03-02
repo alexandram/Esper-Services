@@ -66,7 +66,12 @@ public class Nrg4castAlarmListener implements UpdateListener {
 				} else if(propName.equals("longitude")){
 					alert.setLongitude(Double.parseDouble(eb.get(propNames[j]).toString()));
 				} else if(propName.equals("subjectId")){
-					alert.setLocation(eb.get(propNames[j]).toString());
+					if(eb.get(propNames[j])!=null){
+						alert.setLocation(eb.get(propNames[j]).toString());
+					} else {
+						alert.setLocation("null");
+						System.out.println("fts null");
+					}
 				} else if(propName.equals("phenomenon")){
 					p.setPhenomenon(eb.get(propNames[j]).toString());
 					addParam=true;
@@ -76,7 +81,12 @@ public class Nrg4castAlarmListener implements UpdateListener {
 				} else if(propName.equals("uom")){
 					p.setUom(eb.get(propNames[j]).toString());
 				} else if(propName.equals("sensorId")){
-					alert.setSensorId(eb.get(propNames[j]).toString());
+					if(eb.get(propNames[j])!=null){
+						alert.setSensorId(eb.get(propNames[j]).toString());
+					} else {
+						alert.setSensorId("null");
+						System.out.println("fts null");
+					}
 				} else if(propName.equals("message")){
 					alert.setMessage(eb.get(propNames[j]).toString());
 				}else if(propName.equals("pilotName")){

@@ -36,21 +36,21 @@ public class HistoricalDataProcessing implements Runnable {
 			(HistoricalDataProcessing.class.getName());
 	private String path;
 	private EPRuntime cepRT;
-	
+
 
 
 	public HistoricalDataProcessing(String path, EPRuntime cepRT) {
 		super();
 		this.path = path;
 		this.cepRT = cepRT;
-		
+
 	}
 
 
 	public void run() {
 		// configure logger
 		try {
-			FileHandler fh = new FileHandler("dataProcessing.log");
+			FileHandler fh = new FileHandler("dataProcessing2.log");
 			Formatter newFormatter = new SimpleFormatter();
 			fh.setFormatter(newFormatter );
 			log.addHandler(fh);
@@ -67,48 +67,51 @@ public class HistoricalDataProcessing implements Runnable {
 		Date d = new Date(0);
 		ArrayList<Measurement> measurements = new ArrayList<Measurement>();
 		Connection dbCon = connectPsql("postgres", "pgAdmin3");
-		
+
 		if(dirPath.isDirectory()){
 			files = dirPath.list();
 			Charset charset = Charset.forName("US-ASCII");
 			for(String filename: files){
 				if(filename.matches("log-\\d{8}.txt")){
+					System.out.println(filename);
 					Path file = Paths.get(dirPath +"/"+filename);
-				    d = parseFileDate(filename.substring(4, 12));
+					d = parseFileDate(filename.substring(4, 12));
 					try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
 						String line = null;
 						int nline=0;
-						
+
 						while ((line = reader.readLine()) != null) {
 							List<Measurement> result = processLine(line);
-							Collections.addAll(measurements, 
-									result.toArray(new Measurement[result.size()]));
+							measurements.addAll(result);
 							nline++;						
 						}
 						//insert in database
-						
+
 						String sql="";
-						try {
-							Statement stmt = dbCon.createStatement();							
-							for(Measurement m : measurements){
+
+												
+						for(Measurement m : measurements){
+							try {
+								Statement stmt = dbCon.createStatement();	
 								sql = "INSERT INTO \"Measurements\" " + 
-							"VALUES ('"+m.getNodeId()+"','"+m.getNodeName()+"','"
-									+ m.getSubjectId()+"',"+m.getLat()+","
-									+ m.getLng()+ ",'"+m.getSensorId()+"',"
-									+ m.getValue()+ ",'"+m.getTimestamp()+ "','"
-									+ m.getTypeId() + "','" + m.getSensorType()
-									+ "','" +m.getPhenomenon()+"','"+ m.getUom()+ "')";
+										"VALUES ('"+m.getNodeId()+"','"+m.getNodeName()+"','"
+										+ m.getSubjectId()+"',"+m.getLat()+","
+										+ m.getLng()+ ",'"+m.getSensorId()+"',"
+										+ m.getValue()+ ",'"+m.getTimestamp()+ "','"
+										+ m.getTypeId() + "','" + m.getSensorType()
+										+ "','" +m.getPhenomenon()+"','"+ m.getUom()+ "')";
 								stmt.executeUpdate(sql);							
+
+
+							} catch (SQLException e) {							
+								log.info("error inserting in database \n" +
+										"for query:" + sql + "\n"+
+										"error message: " + e.getMessage() +"\n");
 							}
-							
-						} catch (SQLException e) {							
-							log.info("error inserting in database \n" +
-									"for query:" + sql + "\n"+
-									"error message: " + e.getMessage() +"\n");
 						}
-						
+
 						measurements.clear();						
-						
+
 
 					} catch (IOException x) {
 						System.err.format("IOException: %s%n", x);
@@ -125,7 +128,7 @@ public class HistoricalDataProcessing implements Runnable {
 	}
 
 
-	
+
 
 	private List<Measurement> processLine(String line) {
 		ArrayList<Measurement> meass = new ArrayList<Measurement>();
@@ -147,13 +150,14 @@ public class HistoricalDataProcessing implements Runnable {
 					//parse array of measurements
 					for(int j=0;j<ms.size();j++){
 						JSONObject m = (JSONObject)ms.get(j);
-						String sensorId = m.get("sensorid").toString();
 						double val;
 						try{
-						val = Double.parseDouble(m.get("value").toString());
+							val = Double.parseDouble(m.get("value").toString());
 						}catch (NumberFormatException e){
-							val = Double.POSITIVE_INFINITY;
+							//val = Double.POSITIVE_INFINITY;
+							continue;
 						}
+						String sensorId = m.get("sensorid").toString();
 						String timeStr = m.get("timestamp").toString();
 						Date time = parseTimestamp(timeStr);
 						if(refTime.after(time)){
@@ -168,7 +172,7 @@ public class HistoricalDataProcessing implements Runnable {
 								lat, lng, sensorId, val, time, typeId, typeName, 
 								phen, uom);
 						meass.add(mes);
-						
+
 
 					}
 
@@ -197,7 +201,7 @@ public class HistoricalDataProcessing implements Runnable {
 		}  		
 		return result;
 	}
-	
+
 	private Date parseFileDate(String dateStr) {
 		// 20140929
 		DateFormat df = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
@@ -216,43 +220,43 @@ public class HistoricalDataProcessing implements Runnable {
 		}  		
 		return result;
 	}
-	
-	
+
+
 	private Connection connectPsql(String user, String password){
 		System.out.println("-------- PostgreSQL "
 				+ "JDBC Connection Testing ------------");
- 
+
 		try {
- 
+
 			Class.forName("org.postgresql.Driver");
- 
+
 		} catch (ClassNotFoundException e) {
- 
+
 			System.out.println("Where is your PostgreSQL JDBC Driver? "
 					+ "Include in your library path!");
 			e.printStackTrace();
 			return null;
- 
+
 		}
- 
+
 		System.out.println("PostgreSQL JDBC Driver Registered!");
- 
+
 		Connection connection = null;
- 
+
 		try {
- 
+
 			connection = DriverManager.getConnection(
 					"jdbc:postgresql://127.0.0.1:5432/nrg4cast", user,
 					password);
- 
+
 		} catch (SQLException e) {
- 
+
 			System.out.println("Connection Failed! Check output console");
 			e.printStackTrace();
 			return null;
- 
+
 		}
- 
+
 		if (connection != null) {
 			System.out.println("You made it, take control your database now!");
 			return connection;

@@ -171,7 +171,8 @@ public class EPLQueryParser extends HttpServlet {
 								pilotName + "' as pilotName, '" + 
 								type + "' as type, '" + 
 								level + "' as level, '" +
-								message +"' as message " + qss[1];
+								message +"' as message, '" +
+								name + "' as name " +qss[1];
 					}
 					
 				} 

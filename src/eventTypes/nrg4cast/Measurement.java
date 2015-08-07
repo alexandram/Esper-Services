@@ -24,7 +24,6 @@ public class Measurement implements Comparable<Measurement> {
 			double lat, double lng, String sensorId, double value,
 			Date timestamp, String typeId, String sensorType,
 			String phenomenon, String uom) {
-		super();
 		this.nodeId = nodeId;
 		this.nodeName = nodeName;
 		this.subjectId = subjectId;
@@ -40,12 +39,15 @@ public class Measurement implements Comparable<Measurement> {
 	}
 
 	public Measurement() {
-		super();
 	}
 
 
+	
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
+
 	public Measurement(String nodeId) {
-		super();
 		this.nodeId = nodeId;
 	}
 

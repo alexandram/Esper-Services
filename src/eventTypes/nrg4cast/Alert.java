@@ -20,7 +20,6 @@ public class Alert {
 	private String type;
 	private String level;	
 	private String timeWindow;
-//	private AlertHeader header;
 	private ArrayList<PatternParameter> parameters;
 	private boolean isLatLngSet;
 	
@@ -146,6 +145,7 @@ public class Alert {
 	
 	
 
+	@SuppressWarnings("unchecked")
 	public String toJsonString(){
 
 		JSONObject jsonObj = new JSONObject();

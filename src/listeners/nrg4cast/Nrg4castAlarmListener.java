@@ -1,34 +1,22 @@
 package listeners.nrg4cast;
 
-import inputAdapters.nrg4cast.inputEvents.QMinerJSONInputService;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.Date;
-import java.util.HashMap;
 
 import javax.servlet.ServletContext;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
-import org.json.simple.JSONObject;
 
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.EventType;
 import com.espertech.esper.client.UpdateListener;
 
 import eventTypes.nrg4cast.Alert;
-import eventTypes.nrg4cast.AlertHeader;
 import eventTypes.nrg4cast.PatternParameter;
 
 public class Nrg4castAlarmListener implements UpdateListener {
@@ -46,8 +34,7 @@ public class Nrg4castAlarmListener implements UpdateListener {
 
 	@Override
 	public void update(EventBean[] inEvents, EventBean[] outEvents) {
-		HashMap<String,AlertHeader> headers = (HashMap<String,AlertHeader>) context.getAttribute("eventHeaders");
-		AlertHeader head = headers.get(queryName);
+
 		for(int i=0;i<inEvents.length;i++){
 			Alert alert = new Alert();
 					

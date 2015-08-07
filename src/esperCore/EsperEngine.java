@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -21,8 +20,7 @@ import com.espertech.esper.client.deploy.DeploymentOptions;
 import com.espertech.esper.client.deploy.DeploymentOrder;
 import com.espertech.esper.client.deploy.DeploymentResult;
 import com.espertech.esper.client.deploy.Module;
-
-import eventTypes.nrg4cast.AlertHeader;
+import eventTypes.nrg4cast.Prediction;
 
 /**
  * @author alexandram
@@ -32,31 +30,34 @@ public class EsperEngine implements ServletContextListener {
 
 	static final Logger log = Logger.getLogger(EsperEngine.class);
 	static String nrg4castEngineName = "nrg4cast";
-
+	static String nrg4castHistEngineName = "nrg4castHist";
 	private ServletContext context = null;
 	private static Map<String, EsperInstance> instance;
-	private static Map<String, AlertHeader> eventHeaders;
+	private static ArrayList<Prediction> predBuffer;
 	static {
 		instance = new HashMap<String, EsperInstance>();
+		predBuffer =  new ArrayList<Prediction>();
 	}
 
-	static {
-		eventHeaders = new HashMap<String, AlertHeader>();
-	}
+	
 	private List<String> deploymentIds = new ArrayList<String>();
 
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
-			PropertyConfigurator.configure(new File("D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\log4j.properties").toString()); //uncoment for .war deployment
+			PropertyConfigurator.configure(new File("D:\\server\\"
+					+ "TomcatNRG4Cast\\conf\\nrg4castApp\\log4j.properties").
+					toString()); //uncoment for .war deployment
 		this.context = servletContextEvent.getServletContext();
 
 
 		this.context.setAttribute("instances", instance);
-		this.context.setAttribute("eventHeaders", eventHeaders);
+		this.context.setAttribute("predBuffer", predBuffer);
 
 		// add engine instances
 		instance.put(nrg4castEngineName, new EsperNrg4Cast(this.context));
 		log.info(nrg4castEngineName + " engine started");
+	//	instance.put(nrg4castHistEngineName, new EsperNrg4CastHist(this.context));
+	//	log.info(nrg4castHistEngineName + " engine started");
 
 		for(String s: EPServiceProviderManager.getProviderURIs()){
 			System.out.println("known provider uri: " + s);
@@ -64,16 +65,21 @@ public class EsperEngine implements ServletContextListener {
 		//add modules to the corresponding instance
 		try {
 
-			String engineModulesList = servletContextEvent.getServletContext().getInitParameter("eplEngineModules");
+			String engineModulesList = servletContextEvent.getServletContext()
+					.getInitParameter("eplEngineModules");
 
 			String[] split = engineModulesList.split(",");
 			for (int i = 0; i < split.length; i++){
 				String engineName = split[i].trim().replace("Modules", "");
-				String modulesList = servletContextEvent.getServletContext().getInitParameter(split[i].trim());
-				if( Arrays.asList(EPServiceProviderManager.getProviderURIs()).contains(engineName)){
-					addModules(EPServiceProviderManager.getProvider(engineName),modulesList, servletContextEvent);
+				String modulesList = servletContextEvent.getServletContext()
+						.getInitParameter(split[i].trim());
+				if( Arrays.asList(EPServiceProviderManager.getProviderURIs())
+						.contains(engineName)){
+					addModules(EPServiceProviderManager.getProvider(engineName),
+							modulesList, servletContextEvent);
 				}else {
-					addModules(EPServiceProviderManager.getDefaultProvider(),modulesList,servletContextEvent);
+					addModules(EPServiceProviderManager.getDefaultProvider(),
+							modulesList,servletContextEvent);
 				}
 
 			}
@@ -87,30 +93,20 @@ public class EsperEngine implements ServletContextListener {
 			EsperInstance ei = instance.get(engine);
 			ei.addListeners();
 		}
+		
+		
+		
 	}
 
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
 
-
-
-		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-		Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
-		/*for(Thread t : threadArray) {
-
-			if (t.getName().contains("I/O dispatcher") ||
-					t.getName().equals("Thread-1")) {
-				synchronized(t) {
-					t.interrupt(); //bad bad hack
-				}
-			}
-		}*/
-
 		//shut down esper engines
 		for (String key : instance.keySet()) {
 			if(instance.get(key) !=null){
 				instance.get(key).shutdown();
+				log.info(String.format("Instace %s succesfully shutdown",key));
 			}
 
 		}
@@ -128,11 +124,13 @@ public class EsperEngine implements ServletContextListener {
 					if (resourceName.length() == 0) {
 						continue;
 					}
-					//String realPath = servletContextEvent.getServletContext().getRealPath(resourceName);
+					//String realPath = servletContextEvent.getServletContext()
+					//.getRealPath(resourceName);
 					Module module = cep.getEPAdministrator()
 							.getDeploymentAdmin().read(new File(resourceName));
 					modules.add(module);
-					log.info(String.format("Module %s added to engine %s", resourceName, cep.getURI()));
+					log.info(String.format("Module %s added to engine %s",
+							resourceName, cep.getURI()));
 				}
 
 
@@ -143,7 +141,8 @@ public class EsperEngine implements ServletContextListener {
 				// Deploy
 				for (Module module : order.getOrdered()) {
 					DeploymentResult result = cep.getEPAdministrator()
-							.getDeploymentAdmin().deploy(module, new DeploymentOptions());
+							.getDeploymentAdmin()
+							.deploy(module, new DeploymentOptions());
 					deploymentIds.add(result.getDeploymentId());
 				}
 			}

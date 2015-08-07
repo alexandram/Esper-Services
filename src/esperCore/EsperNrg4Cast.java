@@ -1,5 +1,9 @@
 package esperCore;
 
+
+
+import inputAdapters.nrg4cast.inputEvents.PredictionDelay;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -15,10 +19,8 @@ import javax.servlet.ServletContext;
 
 import listeners.nrg4cast.Nrg4castAlarmListener;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import com.espertech.esper.client.Configuration;
 import com.espertech.esper.client.EPAdministrator;
@@ -29,22 +31,6 @@ import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.EventType;
 import com.espertech.esper.client.UpdateListener;
-import com.espertech.esper.client.time.CurrentTimeEvent;
-import com.espertech.esperio.http.EsperIOHTTPAdapter;
-import com.espertech.esperio.http.config.ConfigurationHTTPAdapter;
-import com.espertech.esperio.http.config.Request;
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 import eventTypes.nrg4cast.*;
@@ -56,12 +42,13 @@ public class EsperNrg4Cast implements EsperInstance{
 
 	static final Logger log = Logger.getLogger(EsperNrg4Cast.class);
 	static String engineName = "nrg4cast";
-		static String configFile = "D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\esper.nrg4cast.cfg.xml"; //uncomment this for tomcat deployment
-	//static String configFile = "D:\\Users\\alexandram\\nrg4cast\\Esper-Services\\WebContent\\WEB-INF\\conf\\esper.nrg4cast.cfg.xml";
+	//static String configFile = "D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\esper.nrg4cast.cfg.xml"; //uncomment this for tomcat deployment
+	static String configFile = "D:\\Users\\alexandram\\nrg4cast\\Esper-Services\\WebContent\\WEB-INF\\conf\\esper.nrg4cast.cfg.xml";
 	static String queriesFile = "D:\\server\\TomcatNRG4Cast\\conf\\nrg4castApp\\queries.epl";
 	Configuration cepConfig = null;
 	EPServiceProvider cep = null;
 	ServletContext context;
+	PredictionDelay dataSource;
 
 	public EsperNrg4Cast(ServletContext context){
 
@@ -80,6 +67,7 @@ public class EsperNrg4Cast implements EsperInstance{
 				engineName, cepConfig);		
 		EPRuntime cepRT = cep.getEPRuntime();
 		this.context = context;
+		
 
 		
 		//tests
@@ -103,16 +91,28 @@ public class EsperNrg4Cast implements EsperInstance{
 		}	
 
 	}
+	
+	public void addDataSources(){
+		//add data sources
+		dataSource = new PredictionDelay();
+		Thread tSync = new Thread(dataSource);
+		tSync.setName("PredictionDelay");
+		tSync.start();
+
+	}
 
 	@Override
 	public void addEventTypes(Configuration config){
 		config.addEventType("Measurement", Measurement.class.getName());
+		config.addEventType("WeatherMeasurement", WeatherMeasurement.class.getName());
+		config.addEventType("Prediction", Prediction.class.getName());
 		config.addEventType("Alert", Alert.class.getName());
 
 	}
 
 	@Override
 	public void shutdown(){
+		dataSource.terminate();
 		cep.destroy();
 	}
 
@@ -125,16 +125,7 @@ public class EsperNrg4Cast implements EsperInstance{
 				for(EventBean e: newData){
 
 					EventType t= e.getEventType();
-					//	log.info(t.getName());
-
 					log.info(e.getUnderlying().toString());
-
-
-
-					//	log.info(t.getName());
-					//	log.info(t.getStartTimestampPropertyName());
-					//	log.info(e.get(pNames[0]));
-					//	log.info(t.getPropertyType(pNames[0]));
 				}
 			}
 

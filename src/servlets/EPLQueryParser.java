@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,40 +14,11 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-
-import esperCore.EsperEngine;
 import esperCore.EsperInstance;
-import eventTypes.nrg4cast.AlertHeader;
-import eventTypes.nrg4cast.PatternParameter;
 
 /**
  * Servlet implementation class EPLQueryParser
@@ -163,7 +133,7 @@ public class EPLQueryParser extends HttpServlet {
 
 				if (queryObj.containsKey("epl")){
 					queryString = queryObj.get("epl").toString();
-					String [] qss = queryString.split("\\*");
+					String [] qss = queryString.split("\\*",2);
 					if(qss.length!=2){
 						return "unkown error, select statement seems to be incomplete";
 					} else {
@@ -188,10 +158,7 @@ public class EPLQueryParser extends HttpServlet {
 
 
 
-	private boolean validTimeWindow(String string) {
-
-		return true;
-	}
+	
 
 	private String parseParameters(JSONObject parametersObj) {
 		if(parametersObj.containsKey("or") || parametersObj.containsKey("and")){

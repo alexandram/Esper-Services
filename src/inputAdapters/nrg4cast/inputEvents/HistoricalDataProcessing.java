@@ -14,7 +14,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -194,7 +193,7 @@ public class HistoricalDataProcessing implements Runnable {
 		Date result= null;
 
 		try {
-			result = df.parse(timestamp);			
+			result = df.parse(timestamp);		
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();			
@@ -265,5 +264,8 @@ public class HistoricalDataProcessing implements Runnable {
 			return null;
 		}
 	}
+	
+	
+	
 
 }

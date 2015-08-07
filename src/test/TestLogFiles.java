@@ -4,12 +4,6 @@ import com.espertech.esper.client.EPRuntime;
 
 import inputAdapters.nrg4cast.inputEvents.HistoricalDataProcessing;
 
-import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
  
 public class TestLogFiles {
 
